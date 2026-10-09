@@ -14,7 +14,7 @@ import hashlib
 import json
 import re
 import sys
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 
 REPO = Path(__file__).resolve().parent.parent
 NOTEBOOKS = [
@@ -52,16 +52,35 @@ def read_json(path: Path, problems: list[str]) -> dict | list | None:
         return None
 
 
-def check_dpo(problems: list[str], warnings: list[str]) -> None:
+def reference_matches(base: str, training_root: str | None = None) -> bool:
+    """Match the local reference or an explicitly declared relocated training root."""
+    if not base:
+        return False
+    path = Path(base)
+    local = path if path.is_absolute() else REPO / path
+    if local.resolve() == (REPO / "models" / "sft-merged").resolve():
+        return True
+    if training_root is None:
+        return False
+    # Compare the complete recorded path, not just a permissive directory suffix.
+    recorded = PurePosixPath(base.replace("\\", "/"))
+    origin = PurePosixPath(training_root.replace("\\", "/"))
+    if ".." in recorded.parts or ".." in origin.parts:
+        return False
+    return recorded == origin / "models" / "sft-merged"
+
+
+def check_dpo(problems: list[str], warnings: list[str], training_root: str | None = None) -> None:
     adapter = REPO / "adapters" / "dpo"
     if not need(adapter / "adapter_config.json", "DPO adapter (NB3)", problems):
         return
     base = str((read_json(adapter / "adapter_config.json", problems) or {}).get("base_model_name_or_path", ""))
     expected = (REPO / "models" / "sft-merged").resolve()
-    if not base or Path(base).resolve() != expected:
+    if not reference_matches(base, training_root):
         problems.append(
             f"WRONG REF  adapters/dpo was trained on {base!r}, not {rel(expected)}: the DPO reference "
-            "must be this repo's SFT model (if the repo moved, rerun NB3 here)."
+            "must be this repo's SFT model. For an exported run, declare its original "
+            "workspace with --training-root (e.g. /content/lab22)."
         )
     sys.path.insert(0, str(REPO))
     from lab22.data import split_mismatch
@@ -187,19 +206,26 @@ def smoke() -> int:
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--smoke", action="store_true", help="pre-training import/GPU check")
-    if parser.parse_args().smoke:
+    parser.add_argument(
+        "--training-root",
+        help="Original workspace of an exported run; map only its models/sft-merged reference here",
+    )
+    args = parser.parse_args()
+    if args.smoke:
         return smoke()
 
     problems: list[str] = []
     warnings: list[str] = []
     print(f"==> Verifying submission at {REPO}\n")
+    if args.training_root:
+        print(f"  Exported run: original training root = {args.training_root}\n")
     for nb in NOTEBOOKS:
         need(REPO / "notebooks" / f"{nb}.py", f"notebook {nb}", problems)
     need(REPO / "adapters" / "sft-mini" / "adapter_config.json", "SFT adapter (NB1)", problems)
     need(REPO / "models" / "sft-merged" / "config.json", "merged SFT model = DPO reference (NB1)", problems)
     need(REPO / "data" / "pref" / "train.parquet", "preference train split (NB2)", problems)
     need(REPO / "data" / "pref" / "eval.parquet", "held-out preference split (NB2)", problems)
-    check_dpo(problems, warnings)
+    check_dpo(problems, warnings, args.training_root)
     check_judge(problems, warnings)
     check_reflection(problems)
     check_screenshots(problems)

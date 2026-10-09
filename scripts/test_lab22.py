@@ -18,6 +18,19 @@ from lab22 import judge as J
 from lab22 import math_reward as MR
 
 
+def test_verify_reference_requires_explicit_relocation(monkeypatch, tmp_path):
+    from scripts import verify
+
+    monkeypatch.setattr(verify, "REPO", tmp_path)
+    assert verify.reference_matches("models/sft-merged")
+    assert verify.reference_matches(str(tmp_path / "models" / "sft-merged"))
+    assert not verify.reference_matches("/content/lab22/models/sft-merged")
+    assert verify.reference_matches("/content/lab22/models/sft-merged", "/content/lab22")
+    assert not verify.reference_matches("/content/other/models/sft-merged", "/content/lab22")
+    assert not verify.reference_matches("unsloth/Qwen2.5-3B-bnb-4bit", "/content/lab22")
+    assert not verify.reference_matches("/content/lab22/../other/models/sft-merged", "/content/lab22")
+
+
 def pair(prompt: str, chosen: str = "good answer", rejected: str = "bad") -> dict:
     return D.to_conversational({"prompt": prompt, "chosen": chosen, "rejected": rejected})
 

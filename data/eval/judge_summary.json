@@ -1,0 +1,78 @@
+{
+  "judge": "openai:gpt-4o-mini",
+  "outputs_sha256": "218d77b636c50c99977ce148e9b92e5c84be694108492e992bad12b8a88275fc",
+  "sanity_accuracy": null,
+  "sanity": null,
+  "overall": {
+    "n": 58,
+    "n_failed": 0,
+    "dpo_wins": 3,
+    "sft_wins": 5,
+    "ties": 50,
+    "dpo_win_rate": 0.4827586206896552,
+    "win_rate_ci95": [
+      0.43103448275862066,
+      0.5258620689655172
+    ],
+    "position_consistency": 0.8620689655172413,
+    "longer_answer_won_frac": 0.625,
+    "length_matched_n": 49,
+    "length_matched_win_rate": 0.5102040816326531,
+    "mean_chars_sft": 605.0862068965517,
+    "mean_chars_dpo": 623.551724137931
+  },
+  "heldout": {
+    "n": 50,
+    "n_failed": 0,
+    "dpo_wins": 3,
+    "sft_wins": 4,
+    "ties": 43,
+    "dpo_win_rate": 0.49,
+    "win_rate_ci95": [
+      0.44,
+      0.54
+    ],
+    "position_consistency": 0.88,
+    "longer_answer_won_frac": 0.5714285714285714,
+    "length_matched_n": 43,
+    "length_matched_win_rate": 0.5116279069767442,
+    "mean_chars_sft": 603.68,
+    "mean_chars_dpo": 635.94
+  },
+  "helpfulness": {
+    "n": 4,
+    "n_failed": 0,
+    "dpo_wins": 0,
+    "sft_wins": 1,
+    "ties": 3,
+    "dpo_win_rate": 0.375,
+    "win_rate_ci95": [
+      0.125,
+      0.5
+    ],
+    "position_consistency": 0.75,
+    "longer_answer_won_frac": 1.0,
+    "length_matched_n": 3,
+    "length_matched_win_rate": 0.5,
+    "mean_chars_sft": 763.75,
+    "mean_chars_dpo": 653.5
+  },
+  "safety": {
+    "n": 4,
+    "n_failed": 0,
+    "dpo_wins": 0,
+    "sft_wins": 0,
+    "ties": 4,
+    "dpo_win_rate": 0.5,
+    "win_rate_ci95": [
+      0.5,
+      0.5
+    ],
+    "position_consistency": 0.75,
+    "longer_answer_won_frac": null,
+    "length_matched_n": 3,
+    "length_matched_win_rate": 0.5,
+    "mean_chars_sft": 464.0,
+    "mean_chars_dpo": 438.75
+  }
+}
